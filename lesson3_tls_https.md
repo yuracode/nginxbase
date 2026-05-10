@@ -4,7 +4,7 @@
 
 | 項目 | 内容 |
 |------|------|
-| 前提 | 第2回が完了していること（`http://localhost` でNginx経由でTomcatのJSPが表示される状態） |
+| 前提 | 第2回が完了していること（`http://mysite.local/hello.jsp` でNginx経由でTomcatのJSPが表示される状態） |
 | 到達目標 | 自己署名証明書でNginxをHTTPS化し、HTTP→HTTPSリダイレクトを構成する |
 
 ---
@@ -77,7 +77,7 @@ opensslで証明書と秘密鍵を一括生成：
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /etc/nginx/ssl/server.key \
   -out /etc/nginx/ssl/server.crt \
-  -subj "/C=JP/ST=Hokkaido/L=Sapporo/O=SchoolLab/CN=localhost"
+  -subj "/C=JP/ST=Hokkaido/L=Sapporo/O=CyberSchoolLab/CN=localhost"
 ```
 
 | オプション | 意味 |
@@ -110,14 +110,14 @@ sudo nano /etc/nginx/conf.d/mysite.conf
 # HTTP → HTTPS リダイレクト
 server {
     listen 80;
-    server_name localhost;
+    server_name mysite.local;
     return 301 https://$host$request_uri;
 }
 
 # HTTPS サーバー
 server {
     listen 443 ssl;
-    server_name localhost;
+    server_name mysite.local;
 
     # 証明書と秘密鍵の指定
     ssl_certificate     /etc/nginx/ssl/server.crt;
@@ -128,7 +128,7 @@ server {
 
     # リバースプロキシ（Tomcatへ転送）
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://mysite.local:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -150,11 +150,11 @@ sudo systemctl reload nginx
 
 ## 3-5. HTTPS接続を確認する
 
-ブラウザで `https://localhost` にアクセスする。
+ブラウザで `https://mysite.local/hello.jsp` にアクセスする。
 
 > ⚠️ **「この接続は安全ではありません」警告が出る**
 > → 自己署名証明書のため正常。
-> → 「詳細設定」→「localhostにアクセスする（安全ではありません）」をクリックして続行。
+> → 「詳細設定」→「mysite.localにアクセスする（安全ではありません）」をクリックして続行。
 > → TomcatのJSPページが表示されればOK。
 
 ---
@@ -163,13 +163,13 @@ sudo systemctl reload nginx
 
 ```bash
 # -k : 自己署名証明書の警告を無視
-curl -k https://localhost
+curl -k https://mysite.local/hello.jsp
 
 # HTTP→HTTPSリダイレクトを確認（-L はリダイレクト追跡）
-curl -Lk http://localhost
+curl -Lk http://mysite.local/hello.jsp
 
 # 証明書の詳細を表示
-curl -vk https://localhost 2>&1 | grep -A5 "Server certificate"
+curl -vk https://mysite.local/hello.jsp 2>&1 | grep -A5 "Server certificate"
 ```
 
 ---
@@ -178,11 +178,11 @@ curl -vk https://localhost 2>&1 | grep -A5 "Server certificate"
 
 | 確認項目 | 期待する結果 |
 |----------|-------------|
-| `http://localhost` | `https://localhost` へ301リダイレクトされる |
-| `https://localhost` | 警告を経由してTomcatのJSPページが表示される |
+| `http://mysite.local/hello.jsp` | `https://mysite.local/hello.jsp` へ301リダイレクトされる |
+| `https://mysite.local/hello.jsp` | 警告を経由してTomcatのJSPページが表示される |
 | アドレスバー | 鍵マーク（または警告マーク）が表示される |
-| `curl -kI https://localhost` | `HTTP/1.1 200 OK` が返る |
-| `curl -I http://localhost` | `HTTP/1.1 301 Moved Permanently` が返る |
+| `curl -kI https://mysite.local/hello.jsp` | `HTTP/1.1 200 OK` が返る |
+| `curl -I http://mysite.local/hello.jsp` | `HTTP/1.1 301 Moved Permanently` が返る |
 
 ---
 
@@ -251,7 +251,7 @@ curl -vk https://localhost 2>&1 | grep -A5 "Server certificate"
 
 | 症状 | 確認ポイント |
 |------|-------------|
-| `https://localhost` が繋がらない | `sudo ss -tlnp \| grep 443` で443がLISTENしているか |
+| `https://mysite.local` が繋がらない | `sudo ss -tlnp \| grep 443` で443がLISTENしているか |
 | `nginx: [emerg] cannot load certificate` | 証明書/鍵のパス・権限を確認（`ls -la /etc/nginx/ssl/`） |
 | リダイレクトループ | 80側と443側の `server` ブロックを取り違えていないか |
 | ブラウザが永遠にロード中 | Tomcatコンテナが落ちている可能性（`docker compose ps`） |

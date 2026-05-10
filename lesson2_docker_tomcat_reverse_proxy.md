@@ -130,7 +130,7 @@ docker compose logs tomcat
 ```
 
 > **確認ポイント**
-> ブラウザで `http://localhost:8080` にアクセスして
+> ブラウザで `http://localhost:8080/hello.jsp` にアクセスして
 > 「Hello from Tomcat!」が表示されればOK。
 
 ---
@@ -148,7 +148,7 @@ sudo nano /etc/nginx/conf.d/mysite.conf
 ```nginx
 server {
     listen 80;
-    server_name localhost;
+    server_name mysite.local;
 
     # 静的ファイルはNginxが直接返す
     location /static/ {
@@ -180,8 +180,8 @@ sudo systemctl reload nginx
 
 | アクセス先 | 期待する結果 |
 |------------|-------------|
-| `http://localhost:8080` | Tomcatに直接アクセスできる（Hello from Tomcat!） |
-| `http://localhost` | Nginx経由で同じJSPページが表示される |
+| `http://localhost:8080/hello.jsp` | Tomcatに直接アクセスできる（Hello from Tomcat!） |
+| `http://localhost/hello.jsp` | Nginx経由で同じJSPページが表示される |
 | `docker compose ps` | `tomcat` サービスが `Up` 状態 |
 | `sudo nginx -t` | エラーなく通る |
 

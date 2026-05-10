@@ -117,7 +117,7 @@ sudo nano /etc/nginx/conf.d/mysite.conf
 ```nginx
 server {
     listen 80;
-    server_name localhost;
+    server_name mysite.local;
 
     root /var/www/mysite;
     index index.html;
@@ -175,7 +175,7 @@ sudo systemctl reload nginx
 ## 発展課題（任意）
 
 1. `index.html` に加えて `/about.html` を作り、`http://localhost/about.html` で表示できることを確認する。
-2. `/etc/nginx/conf.d/mysite.conf` の `server_name` を `mysite.local` に変更し、`/etc/hosts` に `127.0.0.1 mysite.local` を追記して、名前ベースのアクセスを試す。
+2. `/etc/nginx/conf.d/mysite.conf` の `server_name` を `mysite.local` に変更し、`c:/windows/system32/drivers/etc/hosts` に `127.0.0.1 mysite.local` を追記して、名前ベースのアクセスを試す。
 3. `access_log` と `error_log` のパスを調べ、ブラウザでアクセスしたときにログが追記されることを `tail -f` で観察する。
 
 ---
